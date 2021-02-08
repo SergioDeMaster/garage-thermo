@@ -1,0 +1,63 @@
+esphome:
+  name: garage_thermo
+  platform: ESP8266
+  board: nodemcuv2
+
+wifi:
+  output_power: 19dB
+  ssid: !secret wifi_garage_ssid_name
+  password: !secret wifi_garage_ssid_pass
+
+  manual_ip:
+    static_ip: 192.168.3.42
+    gateway: 192.168.3.1
+    subnet: 255.255.255.0
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Garage Thermo Fallback Hotspot"
+    password: !secret fallback_password
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: !secret api_password
+
+ota:
+  password: !secret ota_password
+
+dallas:
+  #pin d5
+  - pin: GPIO14
+    update_interval: 90s
+
+sensor:
+  - platform: dallas
+    address: 0x3C3C01B6079FBA28
+    name: "Уличная температура"
+    id: external_temperature
+    accuracy_decimals: 0
+    resolution: 9
+  - platform: dallas
+    address: 0x320000068B6E9628
+    name: "Температура в гараже"
+    id: internal_temperature
+    accuracy_decimals: 0
+    resolution: 9
+    
+display:
+  platform: tm1637
+  clk_pin: D1
+  dio_pin: D2
+  update_interval: 5s
+  lambda: |-
+      static int i = 0;
+      i++;
+      if ((i % 2) == 0)
+        it.printf(0, "%.0f~", id(internal_temperature).state);
+      else
+        it.printf(0, "%.0fC", id(external_temperature).state);
