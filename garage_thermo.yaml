@@ -20,6 +20,7 @@ wifi:
 
 captive_portal:
 
+
 # Enable logging
 logger:
 
